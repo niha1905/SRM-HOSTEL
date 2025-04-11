@@ -1,0 +1,174 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const menuItems = document.querySelectorAll('.sidebar ul li a');
+    const contentSections = document.querySelectorAll('.content-area section');
+
+    // Default: Show the first section by removing 'hidden' class
+    if (contentSections.length > 0) {
+        contentSections[0].classList.remove('hidden');
+    }
+
+    menuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+
+            contentSections.forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+        });
+    });
+
+    // Create charts
+    createRoomOccupancyChart();
+    createComplaintResolutionChart();
+    createFeePaymentChart();
+    createMealFeedbackChart();
+
+    // Handle quick access buttons
+    const quickButtons = document.querySelectorAll('.quick-btn');
+    quickButtons.forEach(button => {
+        button.addEventListener('click', handleQuickAction);
+    });
+
+    // Display sample alerts
+    displayAlert('Warning: Room availability is low!', 'warning');
+    displayAlert('5 new complaints require attention', 'danger');
+    displayAlert('Fee payment due date approaching', 'info');
+});
+
+function createRoomOccupancyChart() {
+    const ctx = document.getElementById('roomOccupancyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Occupied', 'Available'],
+            datasets: [{
+                data: [75, 25],
+                backgroundColor: ['#007bff', '#28a745']
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Room Occupancy'
+            }
+        }
+    });
+}
+
+function createComplaintResolutionChart() {
+    const ctx = document.getElementById('complaintResolutionChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+                label: 'Average Resolution Time (days)',
+                data: [3, 2.5, 2, 1.5],
+                borderColor: '#17a2b8',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Complaint Resolution Time'
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function createFeePaymentChart() {
+    const ctx = document.getElementById('feePaymentChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Paid', 'Overdue', 'Upcoming'],
+            datasets: [{
+                data: [60, 10, 30],
+                backgroundColor: ['#28a745', '#dc3545', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Fee Payment Status'
+            }
+        }
+    });
+}
+
+function createMealFeedbackChart() {
+    const ctx = document.getElementById('mealFeedbackChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Breakfast', 'Lunch', 'Dinner'],
+            datasets: [{
+                label: 'Average Rating',
+                data: [4.2, 3.8, 4.5],
+                backgroundColor: '#007bff'
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Meal Service Feedback'
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 5
+                }
+            }
+        }
+    });
+}
+
+function handleQuickAction(e) {
+    const action = e.target.dataset.action;
+    switch (action) {
+        case 'add-student':
+            alert('Redirecting to student registration page...');
+            break;
+        case 'resolve-complaint':
+            alert('Redirecting to pending complaints list...');
+            break;
+        case 'assign-room':
+            alert('Redirecting to room allocation module...');
+            break;
+    }
+}
+
+function displayAlert(message, type) {
+    const alertsContainer = document.querySelector('.alerts-container');
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type}`;
+    alert.innerHTML = `
+        <span>${message}</span>
+        <button class="alert-close">&times;</button>
+    `;
+    alertsContainer.appendChild(alert);
+
+    alert.querySelector('.alert-close').addEventListener('click', () => {
+        alert.remove();
+    });
+
+    setTimeout(() => {
+        alert.remove();
+    }, 5000);  // Automatically remove the alert after 5 seconds
+}
