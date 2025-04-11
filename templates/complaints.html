@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Management - SRM Hostel Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .complaints-page {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        .section h2 {
+            color: #4a90e2;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 10px;
+        }
+        form {
+            display: grid;
+            gap: 15px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+            outline: none;
+        }
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        button:hover {
+            background-color: #3a7bc8;
+            transform: translateY(-2px);
+        }
+        .complaint-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .complaint-item {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .complaint-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .complaint-item .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .status-pending { background-color: #ffeeba; color: #856404; }
+        .status-in-progress { background-color: #b8daff; color: #004085; }
+        .status-resolved { background-color: #c3e6cb; color: #155724; }
+        .feedback-form {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .complaint-details {
+            flex-grow: 1;
+            margin-right: 20px;
+        }
+        .complaint-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .complaint-actions button {
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+        .satisfaction-rating {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .satisfaction-rating label {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .satisfaction-rating label:hover {
+            background-color: #e0e0e0;
+        }
+        .satisfaction-rating input[type="radio"] {
+            display: none;
+        }
+        .satisfaction-rating input[type="radio"]:checked + label {
+            background-color: #4a90e2;
+            color: white;
+        }
+     
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* Status circle styling */
+        .status-circle {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-pending {
+            background-color: red;
+        }
+
+        .status-in-progress {
+            background-color: yellow;
+        }
+
+        .status-resolved {
+            background-color: green;
+        }
+    
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <img src="https://scet.berkeley.edu/wp-content/uploads/8.-SRM-Logo.png" alt="SRM Logo" >
+            </div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('student_portal') }}" data-tooltip="Manage Student Information" target="_self">
+                        <i class="fas fa-user"></i>
+                        <span>Student Information</span>
+                        <i class="hover-icon fas fa-id-card"></i>
+                    </a>                    
+                </li>
+            
+                <li>
+                    <a href="{{ url_for('food') }}" data-tooltip="Manage Student Information" target="_self">
+                        <i class="fas fa-utensils"></i>
+                        <span>Food</span>
+                        <i class="hover-icon fas fa-hamburger"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('display_requests') }}" data-tooltip="Submit Requests" target="_self">
+                        <i class="fas fa-heart"></i>
+                        <span>Request</span>
+                        <i class="hover-icon fas fa-clipboard-list"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('visitor_management') }}" data-tooltip="View Visitor Logs" target="_self">
+                        <i class="fas fa-comments"></i>
+                        <span>Visitor</span>
+                        <i class="hover-icon fas fa-user-check"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('complaints') }}" data-tooltip="Report or Complaint" target="_self">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Report/Complaint</span>
+                        <i class="hover-icon fas fa-exclamation-triangle"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('fee_amounts') }}" data-tooltip="Fee Payment" target="_self">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Fee Payment</span>
+                        <i class="hover-icon fas fa-credit-card"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <h1>Complaint Management</h1>
+            </header>
+            
+            <!-- Complaint Submission Form -->
+            <div class="complaints-page">
+                <section class="section">
+                    <h2>Submit a New Complaint</h2>
+                    <form id="complaint-form">
+                        <input type="number" id="student-id" name="student-id" placeholder="Student ID" required>
+                        <input type="text" id="complaint-title" name="complaint-title" placeholder="Complaint Title" required>
+                        <textarea id="complaint-description" name="complaint-description" placeholder="Describe your complaint" required></textarea>
+                        <select id="complaint-category" name="complaint-category" required>
+                            <option value="">Select Category</option>
+                            <option value="Room Issue">Room Issue</option>
+                            <option value="Noise">Noise</option>
+                            <option value="Plumbing">Plumbing</option>
+                            <option value="Electricity">Electricity</option>
+                            <option value="Internet">Internet</option>
+                            <option value="Sanitation">Sanitation</option>
+                            <option value="Service">Service</option>
+                        </select>
+                        <button type="submit">Submit Complaint</button>
+                    </form>
+                </section>
+            </div>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                th, td {
+                    padding: 12px;
+                    text-align: left;
+                    border: 1px solid #ddd;
+                }
+                th {
+                    background-color: #f4f4f4;
+                }
+                .section-title {
+                    margin-top: 40px;
+                    font-size: 24px;
+                }
+            </style>
+        </head>
+        <body>
+
+                <!-- Complaint Table -->
+<section class="section">
+    <h2>Your Complaints</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Submitted Date</th>
+            </tr>
+        </thead>
+        <tbody id="complaint-list-body">
+            {% for complaint in complaints %}
+            <tr>
+                <td>{{ complaint.id }}</td>
+                <td>{{ complaint.title }}</td>
+                <td>{{ complaint.description }}</td>
+                <td>{{ complaint.category }}</td>
+                <td>
+                    {% if complaint.status == 'pending' %}
+                        <span class="status-circle status-pending"></span> Pending
+                    {% elif complaint.status == 'in progress' %}
+                        <span class="status-circle status-in-progress"></span> In Progress
+                    {% elif complaint.status == 'resolved' %}
+                        <span class="status-circle status-resolved"></span> Resolved
+                    {% else %}
+                        <span class="status-circle" style="background-color: grey;"></span> Unknown
+                    {% endif %}
+                </td>
+                <td>{{ complaint.submitted_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+                </div>
+                        <!-- Complaints will be dynamically added here -->
+                    
+                <section class="section feedback-form" id="feedback-form">
+                    <h2>Provide Feedback</h2>
+                    <form id="resolution-feedback-form">
+                        <input type="hidden" id="feedback-complaint-id" name="feedback-complaint-id">
+                        <div class="satisfaction-rating">
+                            <input type="radio" id="rating-5" name="satisfaction-rating" value="5" required>
+                            <label for="rating-5">Very Satisfied</label>
+                            <input type="radio" id="rating-4" name="satisfaction-rating" value="4">
+                            <label for="rating-4">Satisfied</label>
+                            <input type="radio" id="rating-3" name="satisfaction-rating" value="3">
+                            <label for="rating-3">Neutral</label>
+                            <input type="radio" id="rating-2" name="satisfaction-rating" value="2">
+                            <label for="rating-2">Unsatisfied</label>
+                            <input type="radio" id="rating-1" name="satisfaction-rating" value="1">
+                            <label for="rating-1">Very Unsatisfied</label>
+                        </div>
+                        <textarea id="feedback-comments" name="feedback-comments" placeholder="Additional comments"></textarea>
+                        <button type="submit">Submit Feedback</button>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Simulated complaints data (in a real app, this would come from a server)
+        // Fetch complaints from the backend
+function fetchComplaints() {
+    fetch('/complaints')
+        .then(response => response.json())
+        .then(data => {
+            complaints = data;
+            displayComplaints();
+        })
+        .catch(error => console.error('Error fetching complaints:', error));
+}
+
+function displayComplaints() {
+    const complaintList = document.getElementById('complaint-list');
+    complaintList.innerHTML = '';
+    complaints.forEach(complaint => {
+        const li = document.createElement('li');
+        li.className = 'complaint-item';
+        li.innerHTML = `
+            <div class="complaint-details">
+                <strong>${complaint.title}</strong> (${complaint.category})
+                <br>
+                <small>${complaint.description}</small>
+                <br>
+                <small>Submitted on: ${complaint.date}</small>
+            </div>
+            <div class="complaint-actions">
+                <span class="status status-${complaint.status}">${complaint.status}</span>
+                ${complaint.status === 'resolved' ? `<button onclick="showFeedbackForm(${complaint.id})">Provide Feedback</button>` : ''}
+            </div>
+        `;
+        complaintList.appendChild(li);
+    });
+}
+
+// Show feedback form
+function showFeedbackForm(complaintId) {
+    document.getElementById('feedback-form').style.display = 'block';
+    document.getElementById('feedback-complaint-id').value = complaintId;
+    document.getElementById('feedback-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Submit new complaint
+document.getElementById('complaint-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const studentId = document.getElementById('student-id').value;
+        const title = document.getElementById('complaint-title').value;
+        const description = document.getElementById('complaint-description').value;
+        const category = document.getElementById('complaint-category').value;
+
+        const newComplaint = {
+            student_id: studentId,
+            title: title,
+            description: description,
+            category: category
+        };
+
+        fetch('/submit-complaint', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newComplaint)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            // Optionally, you can refresh the complaint list here
+        })
+        .catch(error => console.error('Error submitting complaint:', error));
+    });
+
+// Submit feedback for resolved complaints
+document.getElementById('resolution-feedback-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const complaintId = document.getElementById('feedback-complaint-id').value;
+    const satisfaction = document.querySelector('input[name="satisfaction-rating"]:checked').value;
+    const comments = document.getElementById('feedback-comments').value;
+
+    const feedbackData = {
+        complaint_id: complaintId,
+        satisfaction: satisfaction,
+        comments: comments
+    };
+
+    fetch('/submit_feedback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(feedbackData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        document.getElementById('feedback-form').style.display = 'none';
+        fetchComplaints();  // Refresh complaints list after feedback submission
+    })
+    .catch(error => console.error('Error submitting feedback:', error));
+});
+
+// Initial fetch of complaints
+fetchComplaints();
+</script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        let complaints = [];
+
+        function fetchComplaints() {
+            fetch('/complaints')
+                .then(response => response.json())
+                .then(data => {
+                    complaints = data;
+                    displayComplaints();
+                })
+                .catch(error => console.error('Error fetching complaints:', error));
+        }
+
+        function displayComplaints() {
+            const complaintTable = document.getElementById('complaint-table');
+            complaintTable.innerHTML = '';  // Clear existing rows
+            complaints.forEach(complaint => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${complaint.id}</td>
+                    <td>${complaint.student_id}</td>
+                    <td>${complaint.title}</td>
+                    <td>${complaint.description}</td>
+                    <td>${complaint.category}</td>
+                    <td><span class="status status-${complaint.status}">${complaint.status}</span></td>
+                    <td>${complaint.submitted_date}</td>
+                `;
+                complaintTable.appendChild(row);
+            });
+        }
+
+        // Show feedback form for a specific complaint
+        function showFeedbackForm(complaintId) {
+            document.getElementById('feedback-form').style.display = 'block';
+            document.getElementById('feedback-complaint-id').value = complaintId;
+        }
+
+        // Submit feedback
+        document.getElementById('resolution-feedback-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const complaintId = document.getElementById('feedback-complaint-id').value;
+            const rating = document.querySelector('input[name="satisfaction-rating"]:checked').value;
+            const comments = document.getElementById('feedback-comments').value;
+
+            fetch(`/feedback/${complaintId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rating, comments })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                document.getElementById('feedback-form').style.display = 'none';
+                fetchComplaints();  // Refresh the complaints list
+            })
+            .catch(error => console.error('Error submitting feedback:', error));
+        });
+
+        // Initial fetch of complaints
+        fetchComplaints();
+    </script>
+    
+</body>
+</html>
