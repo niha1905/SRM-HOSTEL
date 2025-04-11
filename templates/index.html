@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRM Hostel Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit-id.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <img src="https://scet.berkeley.edu/wp-content/uploads/8.-SRM-Logo.png" alt="SRM Logo" >
+            </div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('student_portal') }}" data-tooltip="Manage Student Information" target="_self">
+                        <i class="fas fa-user"></i>
+                        <span>Student Information</span>
+                        <i class="hover-icon fas fa-id-card"></i>
+                    </a>                    
+                </li>
+            
+                <li>
+                    <a href="{{ url_for('food') }}" data-tooltip="Manage Student Information" target="_self">
+                        <i class="fas fa-utensils"></i>
+                        <span>Food</span>
+                        <i class="hover-icon fas fa-hamburger"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('display_requests') }}" data-tooltip="Submit Requests" target="_self">
+                        <i class="fas fa-heart"></i>
+                        <span>Request</span>
+                        <i class="hover-icon fas fa-clipboard-list"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('visitor_management') }}" data-tooltip="View Visitor Logs" target="_self">
+                        <i class="fas fa-comments"></i>
+                        <span>Visitor</span>
+                        <i class="hover-icon fas fa-user-check"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('complaints') }}" data-tooltip="Report or Complaint" target="_self">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Report/Complaint</span>
+                        <i class="hover-icon fas fa-exclamation-triangle"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('fee_amounts') }}" data-tooltip="Fee Payment" target="_self">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Fee Payment</span>
+                        <i class="hover-icon fas fa-credit-card"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <h1>Welcome to SRM Hostel Management</h1>
+            </header>
+            <div class="dashboard">
+                <div class="dashboard-card">
+                    <i class="fas fa-users"></i>
+                    <h3>Total Students</h3>
+                    <p>{{ total_students }}</p>
+                </div>
+                <div class="dashboard-card">
+                    <i class="fas fa-bed"></i>
+                    <h3>Available Rooms</h3>
+                    <p>{{ available_rooms }}</p>
+                </div>
+                <div class="dashboard-card">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Pending Requests</h3>
+                    <p>{{ pending_requests }}</p>
+                </div>
+                <div class="dashboard-card">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h3>Upcoming Events</h3>
+                    <p>{{ upcoming_events }}</p>
+                </div>
+            </div>
+
+            <!-- New Dashboard Elements -->
+            <div class="dashboard-charts">
+                <div class="chart-container">
+                    <canvas id="roomOccupancyChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="complaintResolutionChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="feePaymentChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="mealFeedbackChart"></canvas>
+                </div>
+            </div>
+
+            <div class="quick-access-buttons">
+                <button class="quick-btn" data-action="add-student">Add New Student</button>
+                <button class="quick-btn" data-action="resolve-complaint">Resolve Complaint</button>
+                <button class="quick-btn" data-action="assign-room">Assign Room</button>
+            </div>
+
+            <div class="alerts-container">
+                <!-- Alerts will be dynamically added here -->
+            </div>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                th, td {
+                    padding: 12px;
+                    text-align: left;
+                    border: 1px solid #ddd;
+                }
+                th {
+                    background-color: #f4f4f4;
+                }
+                .section-title {
+                    margin-top: 40px;
+                    font-size: 24px;
+                }
+            </style>
+        </head>
+        <body>
+        
+            <!-- Student Information Section -->
+            <h1>Hostel Student Information</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Registration No</th>
+                        <th>Department</th>
+                        <th>Year</th>
+                        <th>Hostel</th>
+                        <th>Room Number</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Emergency Contact Name</th>
+                        <th>Emergency Contact Number</th>
+                        <th>Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Replace with dynamic data from Flask -->
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student.id }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.reg_no }}</td>
+                        <td>{{ student.department }}</td>
+                        <td>{{ student.year }}</td>
+                        <td>{{ student.hostel }}</td>
+                        <td>{{ student.room_number }}</td>
+                        <td>{{ student.phone }}</td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ student.emergency_contact_name }}</td>
+                        <td>{{ student.emergency_contact_number }}</td>
+                        <td>{{ student.address }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        
+            <!-- Meal Menu Section -->
+            <h1 class="section-title">Meal Menu for {{ today }}</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Meal Type</th>
+                        <th>Description</th>
+                        <th>Calories</th>
+                        <th>Protein (g)</th>
+                        <th>Fat (g)</th>
+                        <th>Carbs (g)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Replace with dynamic data from Flask -->
+                    {% for meal in meals %}
+                    <tr>
+                        <td>{{ meal.meal_type }}</td>
+                        <td>{{ meal.meal_description }}</td>
+                        <td>{{ meal.calories }}</td>
+                        <td>{{ meal.protein }}</td>
+                        <td>{{ meal.fat }}</td>
+                        <td>{{ meal.carbs }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+                <!-- ... Add more sections for other menu items ... -->
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Menu - SRM Hostel Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .food-page {
+            padding: 20px;
+        }
+        .section {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #4a90e2;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 10px;
+        }
+        .weekly-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .day-card {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .day-card h3 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+        .meal {
+            margin-bottom: 10px;
+        }
+        .meal h4 {
+            color: #50c878;
+            margin-bottom: 5px;
+        }
+        form {
+            display: grid;
+            gap: 15px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #3a7bc8;
+        }
+        .star-rating {
+            display: inline-block;
+            font-size: 0;
+        }
+        .star-rating input {
+            display: none;
+        }
+        .star-rating label {
+            float: right;
+            padding: 5px;
+            font-size: 24px;
+            color: #ddd;
+            cursor: pointer;
+        }
+        .star-rating label:before {
+            content: '\2605';
+        }
+        .star-rating input:checked ~ label {
+            color: #ffca28;
+        }
+        .nutrition-info {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .nutrition-item {
+            text-align: center;
+        }
+        .nutrition-item .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4a90e2;
+        }
+        .meal-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .meal-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        .meal-image:hover {
+            transform: scale(1.05);
+        }
+        .food-menu {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .menu-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .meal-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .meal-type {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .star-rating {
+            display: inline-block;
+        }
+        .star {
+            color: #ddd;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .star.active {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <img src="https://scet.berkeley.edu/wp-content/uploads/8.-SRM-Logo.png" alt="SRM Logo" >
+            </div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('student_portal') }}" data-tooltip="Manage Student Information" target="_self">
+                        <i class="fas fa-user"></i>
+                        <span>Student Information</span>
+                        <i class="hover-icon fas fa-id-card"></i>
+                    </a>                    
+                </li>
+            
+                <li>
+                    <a href="{{ url_for('food') }}" data-tooltip="Manage Student Information" target="_self">
+                        <i class="fas fa-utensils"></i>
+                        <span>Food</span>
+                        <i class="hover-icon fas fa-hamburger"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('display_requests') }}" data-tooltip="Submit Requests" target="_self">
+                        <i class="fas fa-heart"></i>
+                        <span>Request</span>
+                        <i class="hover-icon fas fa-clipboard-list"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('visitor_management') }}" data-tooltip="View Visitor Logs" target="_self">
+                        <i class="fas fa-comments"></i>
+                        <span>Visitor</span>
+                        <i class="hover-icon fas fa-user-check"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('complaints') }}" data-tooltip="Report or Complaint" target="_self">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Report/Complaint</span>
+                        <i class="hover-icon fas fa-exclamation-triangle"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('fee_amounts') }}" data-tooltip="Fee Payment" target="_self">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Fee Payment</span>
+                        <i class="hover-icon fas fa-credit-card"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header>
+                <h1>Food Menu</h1>
+            </header>
+            <div class="food-page">
+                <section class="section">
+                    <h2>Weekly Menu</h2>
+                    <h3>{{ current_day }}</h3>
+                    <div class="weekly-menu">
+                        {% for meal in meals %}
+                        <div class="day-card">
+                            <h4>{{ meal.meal_type }}</h4>
+                            <p>{{ meal.meal_description }}</p>
+                            <ul>
+                                <li>Calories: {{ meal.calories }} kcal</li>
+                                <li>Protein: {{ meal.protein }} g</li>
+                                <li>Fat: {{ meal.fat }} g</li>
+                                <li>Carbs: {{ meal.carbs }} g</li>
+                            </ul>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+        
+                <!-- Nutrition Information Section -->
+                <section class="section">
+                    <h2>Nutrition Information</h2>
+                    <div class="nutrition-info">
+                        <div class="nutrition-item">
+                            <div class="value">{{ total_calories }} kcal</div>
+                            <div>Calories</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="value">{{ total_protein }} g</div>
+                            <div>Protein</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="value">{{ total_fat }} g</div>
+                            <div>Fat</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="value">{{ total_carbs }} g</div>
+                            <div>Carbs</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <section>
+            <!-- Dietary Request Form -->
+            <h2>dietary-request-form</h2>
+            <form id="dietary-request-form" action="/submit_dietary_request" method="POST" enctype="multipart/form-data">
+                <input type="text" id="name" name="name" placeholder="Your Name" required>
+                <input type="text" id="room-number" name="room-number" placeholder="Room Number" required>
+                <input type="text" id="allergies" name="allergies" placeholder="Allergies/Restrictions">
+                <textarea id="special-request" name="special-request" placeholder="Special Meal Request" required></textarea>
+                <button type="submit">Submit Request</button>
+            </form>
+        </section>
+        <section>
+            <h2> meal-feedback-form</h2>
+            <!-- Meal Feedback Form -->
+            <form id="meal-feedback-form" action="/submit-feedback" method="POST" enctype="multipart/form-data">
+                <!-- Student ID input -->
+                <label for="student-id">Student ID</label>
+                <input type="text" id="student-id" name="student-id" required>
+            
+                <!-- Date input -->
+                <label for="meal-date">Select Date</label>
+                <input type="date" id="meal-date" name="meal-date" required>
+                
+                <!-- Meal Type Dropdown -->
+                <label for="meal-type">Select Meal</label>
+                <select id="meal-type" name="meal-type" required>
+                    <option value="">Select Meal</option>
+                    <option value="breakfast">Breakfast</option>
+                    <option value="lunch">Lunch</option>
+                    <option value="dinner">Dinner</option>
+                </select>
+            
+                <!-- Star Rating -->
+                   <!-- Star Rating -->
+    <div class="feedback-stars">
+        <span class="star" data-rating="1">&#9733;</span>
+        <span class="star" data-rating="2">&#9733;</span>
+        <span class="star" data-rating="3">&#9733;</span>
+        <span class="star" data-rating="4">&#9733;</span>
+        <span class="star" data-rating="5">&#9733;</span>
+    </div>
+    
+    <!-- Hidden input to store rating value -->
+    <input type="hidden" name="rating" id="rating" />
+
+    <!-- Additional Comments -->
+    <textarea id="feedback-comments" name="feedback-comments" placeholder="Additional Comments"></textarea>
+    
+    <!-- Submit Button -->
+    <button type="submit">Submit Feedback</button>
+            </form>
+        </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+         document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.getAttribute('data-rating');
+                currentRating = rating;
+                updateStars(rating);
+            });
+        });
+
+        function updateStars(rating) {
+            document.querySelectorAll('.star').forEach(star => {
+                star.classList.toggle('active', star.getAttribute('data-rating') <= rating);
+            });
+        }
+        document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('click', function() {
+        const rating = this.getAttribute('data-rating');
+        document.getElementById('rating').value = rating; // Set the rating value in hidden input
+        updateStars(rating);
+    });
+});
+
+function updateStars(rating) {
+    document.querySelectorAll('.star').forEach(star => {
+        star.classList.toggle('active', star.getAttribute('data-rating') <= rating);
+    });
+}
+
+        // Dietary Request Form Submission
+        document.getElementById('dietary-request-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('/submit_dietary_request', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Dietary request submitted successfully!');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        // Meal Feedback Form Submission
+        document.getElementById('meal-feedback-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('/submit-feedback', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Feedback submitted successfully!');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+        function createStarRating(containerId) {
+                        const container = document.getElementById(containerId);
+                        for (let i = 1; i <= 5; i++) {
+                            const star = document.createElement('span');
+                            star.className = 'star';
+                            star.innerHTML = '&#9733;';
+                            star.addEventListener('click', () => {
+                                const stars = container.getElementsByClassName('star');
+                                for (let j = 0; j < stars.length; j++) {
+                                    stars[j].classList.toggle('active', j < i);
+                                }
+                            });
+                            container.appendChild(star);
+                        }
+                    }
+
+                    createStarRating('breakfast-rating');
+                    createStarRating('lunch-rating');
+                    createStarRating('dinner-rating');
+
+                    document.getElementById('submit-rating').addEventListener('click', () => {
+                        alert('Thank you for your feedback!');
+                        // In a real application, this would send the ratings to a server
+                    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Management - SRM Hostel Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #50c878;
+            --accent-color: #ff6b6b;
+            --background-color: #f0f4f8;
+            --text-color: #333;
+            --light-text-color: #666;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .request-page {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        form {
+            display: grid;
+            gap: 20px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+            outline: none;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #3a7bc8;
+            transform: translateY(-2px);
+        }
+
+        .file-upload {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-upload label {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-upload label:hover {
+            background-color: #45b168;
+        }
+
+        .request-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .request-item {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .request-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .request-details {
+            flex-grow: 1;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .status-pending {
+            background-color: #ffeeba;
+            color: #856404;
+        }
+
+        .status-in-progress {
+            background-color: #b8daff;
+            color: #004085;
+        }
+
+        .status-resolved {
+            background-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .urgency {
+            font-size: 0.9em;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+        }
+
+        .urgency-low {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+
+        .urgency-medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .urgency-high {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <img src="https://scet.berkeley.edu/wp-content/uploads/8.-SRM-Logo.png" alt="SRM Logo" >
+            </div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('student_portal') }}" data-tooltip="Manage Student Information" target="_self">
+                        <i class="fas fa-user"></i>
+                        <span>Student Information</span>
+                        <i class="hover-icon fas fa-id-card"></i>
+                    </a>                    
+                </li>
+            
+                <li>
+                    <a href="{{ url_for('food') }}" data-tooltip="Manage Student Information" target="_self">
+                        <i class="fas fa-utensils"></i>
+                        <span>Food</span>
+                        <i class="hover-icon fas fa-hamburger"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('display_requests') }}" data-tooltip="Submit Requests" target="_self">
+                        <i class="fas fa-heart"></i>
+                        <span>Request</span>
+                        <i class="hover-icon fas fa-clipboard-list"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('visitor_management') }}" data-tooltip="View Visitor Logs" target="_self">
+                        <i class="fas fa-comments"></i>
+                        <span>Visitor</span>
+                        <i class="hover-icon fas fa-user-check"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('complaints') }}" data-tooltip="Report or Complaint" target="_self">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Report/Complaint</span>
+                        <i class="hover-icon fas fa-exclamation-triangle"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('fee_amounts') }}" data-tooltip="Fee Payment" target="_self">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Fee Payment</span>
+                        <i class="hover-icon fas fa-credit-card"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+<!-- Main Content -->
+<main class="main-content">
+    <header>
+        <h1>Request Management</h1>
+    </header>
+    <div class="request-page">
+        <div class="request-page">
+            <section class="section fade-in">
+                <h2>Submit a New Request</h2>
+                <form id="request-form" enctype="multipart/form-data">
+                    <!-- Added student-id field -->
+                    <input type="text" id="student-id" name="student-id" placeholder="Student ID" required>
+                    
+                    <select id="request-type" name="request-type" required>
+                        <option value="">Select Request Type</option>
+                        <option value="room-change">Room Change</option>
+                        <option value="maintenance">Maintenance Issue</option>
+                        <option value="general">General Enquiry</option>
+                    </select>
+                    
+                    <textarea id="request-description" name="request-description" rows="4" placeholder="Describe your request" required></textarea>
+        
+                    <select id="urgency-level" name="urgency-level" required>
+                        <option value="">Select Urgency Level</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+        
+                    <div class="file-upload">
+                        <input type="file" id="file-upload" name="file-upload">
+                        <label for="file-upload"><i class="fas fa-paperclip"></i> Attach File (optional)</label>
+                    </div>
+        
+                    <button type="submit">Submit Request</button>
+                </form>
+            </section>
+        </div>
+        
+
+        <section class="section fade-in">
+            <h2>Existing Requests</h2>
+            <ul class="request-list">
+                <!-- Dynamically generated list of requests -->
+                {% for request in requests %}
+                <li class="request-item">
+                    <div class="request-details">
+                        <strong>{{ request.student_name }}</strong> - Room {{ request.room_number }}<br>
+                        Request Type: {{ request.request_type }}<br>
+                        Description: {{ request.description }}<br>
+                        Urgency: <span class="urgency urgency-{{ request.urgency_level|lower }}">{{ request.urgency_level }}</span><br>
+                        Status: <span class="status status-{{ request.status|lower }}">{{ request.status }}</span><br>
+                        Submitted On: {{ request.submitted_date }}
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn-action">Cancel</button>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
+</main>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+document.getElementById('request-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+
+    // Debugging: log form data to check the values before submission
+    formData.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+    });
+
+    fetch('/submit_request', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response from backend:', data);
+        if (data.message) {
+            alert(data.message);  // Displays the success message
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('There was an error submitting your request.');
+    });
+});
+
+</script>
+</body>
+
+</html>

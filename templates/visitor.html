@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Management - SRM Hostel Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #50c878;
+            --accent-color: #ff6b6b;
+            --background-color: #f0f4f8;
+            --text-color: #333;
+            --light-text-color: #666;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .visitor-page {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        form {
+            display: grid;
+            gap: 20px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+            outline: none;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #3a7bc8;
+            transform: translateY(-2px);
+        }
+
+        .visitor-log {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .status-checked-in {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .status-checked-out {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .visitor-pass {
+            background-color: #fff;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 300px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .visitor-pass h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        #qrcode {
+            margin: 20px auto;
+        }
+
+        .feedback-stars {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .star {
+            font-size: 2em;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .star.active {
+            color: #ffd700;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .notification {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .visitor-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .visitor-page {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        form {
+            display: grid;
+            gap: 20px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+            outline: none;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #3a7bc8;
+            transform: translateY(-2px);
+        }
+
+        .visitor-log {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .status-checked-in {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .status-checked-out {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .visitor-pass {
+            background-color: #fff;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 300px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .visitor-pass h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        #qrcode {
+            margin: 20px auto;
+        }
+
+        .feedback-stars {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .star {
+            font-size: 2em;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .star.active {
+            color: #ffd700;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .notification {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .visitor-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <img src="https://scet.berkeley.edu/wp-content/uploads/8.-SRM-Logo.png" alt="SRM Logo" >
+            </div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('student_portal') }}" data-tooltip="Manage Student Information" target="_self">
+                        <i class="fas fa-user"></i>
+                        <span>Student Information</span>
+                        <i class="hover-icon fas fa-id-card"></i>
+                    </a>                    
+                </li>
+            
+                <li>
+                    <a href="{{ url_for('food') }}" data-tooltip="Manage Student Information" target="_self">
+                        <i class="fas fa-utensils"></i>
+                        <span>Food</span>
+                        <i class="hover-icon fas fa-hamburger"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('display_requests') }}" data-tooltip="Submit Requests" target="_self">
+                        <i class="fas fa-heart"></i>
+                        <span>Request</span>
+                        <i class="hover-icon fas fa-clipboard-list"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('visitor_management') }}" data-tooltip="View Visitor Logs" target="_self">
+                        <i class="fas fa-comments"></i>
+                        <span>Visitor</span>
+                        <i class="hover-icon fas fa-user-check"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('complaints') }}" data-tooltip="Report or Complaint" target="_self">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Report/Complaint</span>
+                        <i class="hover-icon fas fa-exclamation-triangle"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('fee_amounts') }}" data-tooltip="Fee Payment" target="_self">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Fee Payment</span>
+                        <i class="hover-icon fas fa-credit-card"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <h1>Visitor Management</h1>
+            </header>
+            <div class="visitor-page">
+                <div class="visitor-stats fade-in">
+                    <div class="stat-card">
+                        <h3>Total Visitors</h3>
+                        <div class="value">152</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Current Visitors</h3>
+                        <div class="value">3</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Upcoming Visits</h3>
+                        <div class="value">7</div>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="openTab(event, 'register')">Register Visitor</button>
+                    <button class="tab" onclick="openTab(event, 'log')">Visitor Log</button>
+                    <button class="tab" onclick="openTab(event, 'feedback')">Visitor Feedback</button>
+                </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content-container">
+                <!-- Registration Tab -->
+                <div id="register" class="tab-content active">
+                    <section class="section fade-in">
+                        <h2>Visitor Registration</h2>
+                        <form id="visitor-form" action="/" method="POST">
+                            <input type="text" id="visitor-name" name="visitor-name" placeholder="Visitor Name" required>
+                            <input type="text" id="visitor-relation" name="visitor-relation" placeholder="Relation to Student" required>
+                            <input type="date" id="visit-date" name="visit-date" required>
+                            
+                            <button type="submit">Register Visitor</button>
+                        </form>
+                    </section>
+
+                    <!-- Visitor Pass with QR Code -->
+                    {% if qr_code_img %}
+                    <section class="section fade-in">
+                        <h2>Visitor Pass</h2>
+                        <div class="visitor-pass">
+                            <h3>SRM Hostel Visitor Pass</h3>
+                            <p id="pass-visitor-name">Visitor: {{ request.form['visitor-name'] }}</p>
+                            <p id="pass-visit-date">Visit Date: {{ request.form['visit-date'] }}</p>
+                            <img src="data:image/png;base64,{{ qr_code_img }}">
+                            <p>Please present this pass at the hostel entrance</p>
+                        </div>
+                    </section>
+                    {% endif %}
+                </div>
+
+                <!-- Visitor Log Tab -->
+                <div id="log" class="tab-content">
+                    <section class="section fade-in">
+                        <h2>Visitor Log</h2>
+                        <div class="visitor-log">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Student ID</th>
+                                        <th>Visitor Name</th>
+                                        <th>Relation</th>
+                                        <th>Visit Date</th>
+                                        <th>Check-in Time</th>
+                                        <th>Check-out Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for visitor in visitors %}
+                                    <tr>
+                                        <td>{{ visitor.id }}</td> <!-- ID -->
+                                        <td>{{ visitor.student_id }}</td><!-- Student ID -->
+                                        <td>{{ visitor.visitor_name }}</td> <!-- Visitor Name -->
+                                        <td>{{ visitor.relation }}</td> <!-- Relation -->
+                                        <td>{{ visitor.visit_date }}</td> <!-- Visit Date -->
+                                        <td>{{ visitor.check_in_time }}</td> <!-- Check-in Time -->
+                                        <td>{{ visitor.check_out_time }}</td> <!-- Check-out Time -->
+                                        <td class="{{ 'status-checked-in' if visitor.status == 'checked-in' else 'status-checked-out' }}">
+                                            {{ visitor.status }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Feedback Tab -->
+                <div id="feedback" class="tab-content">
+                    <section class="section fade-in">
+                        <h2>Visitor Feedback</h2>
+                        <form id="feedback-form" action="/visitor/feedback" method="POST">
+                            <div class="feedback-stars">
+                                <span class="star" data-rating="1">&#9733;</span>
+                                <span class="star" data-rating="2">&#9733;</span>
+                                <span class="star" data-rating="3">&#9733;</span>
+                                <span class="star" data-rating="4">&#9733;</span>
+                                <span class="star" data-rating="5">&#9733;</span>
+                            </div>
+                            <textarea name="feedback-text" placeholder="Share your experience" required></textarea>
+                            <button type="submit">Submit Feedback</button>
+                        </form>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <!-- Include JavaScript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        let currentRating = 0;
+
+        // Tab switching functionality
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // Visitor form submission
+        document.getElementById('visitor-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const visitorName = document.getElementById('visitor-name').value;
+            const visitDate = document.getElementById('visit-date').value;
+            
+            // Generate QR code
+            const qrcode = new QRCode(document.getElementById("qrcode"), {
+                text: `Visitor: ${visitorName}, Date: ${visitDate}`,
+                width: 128,
+                height: 128
+            });
+
+            // Update visitor pass
+            document.getElementById('pass-visitor-name').textContent = `Visitor: ${visitorName}`;
+            document.getElementById('pass-visit-date').textContent = `Visit Date: ${visitDate}`;
+            document.getElementById('download-pass').style.display = 'block';
+
+            // Show notification
+            showNotification('Visitor registered successfully!');
+
+            // Clear form
+            this.reset();
+        });
+
+        // Download visitor pass
+        function downloadPass() {
+            alert('Downloading visitor pass...');
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Visitor log population (mockup, replace with actual server data fetching)
+        function populateVisitorLog() {
+            const logBody = document.getElementById('visitor-log-body');
+            logBody.innerHTML = '';
+            visitorLog.forEach(visitor => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${visitor.name}</td>
+                    <td>${visitor.date}</td>
+                    <td>${visitor.checkIn}</td>
+                    <td>${visitor.checkOut}</td>
+                    <td class="status-${visitor.status.toLowerCase().replace(' ', '-')}">${visitor.status}</td>
+                    <td>${visitor.status === 'Checked In' ? '<button onclick="checkOutVisitor(this)">Check Out</button>' : '-'}</td>
+                `;
+                logBody.appendChild(row);
+            });
+        }
+
+        // Check-out functionality
+        function checkOutVisitor(button) {
+            const row = button.closest('tr');
+            row.cells[3].textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            row.cells[4].textContent = 'Checked Out';
+            row.cells[4].className = 'status-checked-out';
+            row.cells[5].textContent = '-';
+            showNotification('Visitor checked out successfully!');
+        }
+
+        // Star rating functionality
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.getAttribute('data-rating');
+                currentRating = rating;
+                updateStars(rating);
+            });
+        });
+
+        function updateStars(rating) {
+            document.querySelectorAll('.star').forEach(star => {
+                star.classList.toggle('active', star.getAttribute('data-rating') <= rating);
+            });
+        }
+
+        // Feedback form submission
+        document.getElementById('feedback-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const feedbackText = document.getElementById('feedback-text').value;
+            showNotification(`Thank you for your ${currentRating}-star feedback!`);
+            this.reset();
+            updateStars(0);
+            currentRating = 0;
+        });
+         // Visitor form submission with QR code generation
+         document.getElementById("visitor-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const visitorName = formData.get("visitor-name");
+            const visitDate = formData.get("visit-date");
+
+            try {
+                const response = await fetch("/visitor", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Display the QR code and visitor pass
+                    document.querySelector(".visitor-pass img").src = `data:image/png;base64,${result.qr_code_img}`;
+                    document.getElementById("pass-visitor-name").textContent = `Visitor: ${visitorName}`;
+                    document.getElementById("pass-visit-date").textContent = `Visit Date: ${visitDate}`;
+                    document.querySelector(".visitor-pass").style.display = "block";
+
+                    // Show notification
+                    showNotification("Visitor registered successfully!");
+
+                    // Clear form
+                    this.reset();
+                } else {
+                    showNotification("Registration failed. Please try again.", "error");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                showNotification("An error occurred. Please try again.", "error");
+            }
+        });
+
+        // Show notification
+        function showNotification(message, type = "success") {
+            const notification = document.getElementById("notification");
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = "block";
+            setTimeout(() => {
+                notification.style.display = "none";
+            }, 3000);
+        }
+
+        document.getElementById("feedback-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const feedbackData = new FormData(this);
+    feedbackData.append("rating", currentRating); // Ensure this sends the current rating
+
+    try {
+        const response = await fetch("/visitor/feedback", {
+            method: "POST",
+            body: feedbackData,
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification(`Thank you for your ${currentRating}-star feedback!`);
+            this.reset();
+            updateStars(0);
+            currentRating = 0;
+        } else {
+            showNotification("Feedback submission failed. Please try again.", "error");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        showNotification("An error occurred. Please try again.", "error");
+    }
+});
+document.querySelectorAll(".star").forEach(star => {
+    star.addEventListener("click", function () {
+        currentRating = this.getAttribute("data-rating");
+        console.log("Current Rating:", currentRating); // Log the rating value
+        updateStars(currentRating);
+    });
+});
+
+
+        function updateStars(rating) {
+            document.querySelectorAll(".star").forEach(star => {
+                star.classList.toggle("active", star.getAttribute("data-rating") <= rating);
+            });
+        }
+    
+    </script>
+
+</body>
+</html>
